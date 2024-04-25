@@ -1,0 +1,37 @@
+services:
+  api:
+    build: .
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - 80:80
+    command: uvicorn api:app --reload --host 0.0.0.0 --port 80     # Overrides the default command declared by the container image TODO only DEV
+    volumes:
+      - ./api:/app
+    environment:
+      POSTGRES_USER: festup_admin_ehu
+      POSTGRES_PASSWORD: 3jLykwCi5Rbn&cu
+      POSTGRES_IP: postgres
+      POSTGRES_DB: festup
+
+  postgres:
+    image: postgres:latest
+    environment:
+      POSTGRES_USER: festup_admin_ehu
+      POSTGRES_PASSWORD: 3jLykwCi5Rbn&cu
+      POSTGRES_DB: festup
+    healthcheck:
+      test: ["CMD", "pg_isready", "-d", "festup"]                  # Checks if 'festup' database is ready
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - ./DBschema.sql:/docker-entrypoint-initdb.d/DBschema.sql      # Initializes the database with the schema
+      - ./DBtestData.sql:/docker-entrypoint-initdb.d/DBtestData.sql  # Initializes the database with test data
+
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - 3000:8080
