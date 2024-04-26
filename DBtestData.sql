@@ -9,11 +9,11 @@ INSERT INTO "cuadrilla" ("nombre", "descripcion", "lugar") VALUES
 ('PIKITO',	'Somos la cuadrilla PIKITO. Nos conocimos en la carrera de Informática de la UPV/EHU.',	'Bilbao');
 
 INSERT INTO "usuario" ("username", "password", "email", "nombre") VALUES
-('aingerubellido',	'abellido',	'abellido008@ikasle.ehu.eus',	'Aingeru Bellido'),
-('nagoregomez',	'ngomez',	'ngomez067@ikasle.ehu.eus',	'Nagore Gómez'),
-('sergiomartin',	'smartin',	'smartin128@ikasle.ehu.eus',	'Sergio Martín'),
-('maitaneurruela',	'murruela',	'murruela002@ikasle.ehu.eus',	'Maitane Urruela'),
-('ikersobron',	'isobron',	'iker.sobron@ehu.eus',	'Iker Sobrón');
+('aingerubellido',	'$2b$12$qmRWcn46PJcwLGzsQsSFr.AkLIudco6NPdiY1wHWa.sVvjZVgAtyi',	'abellido008@ikasle.ehu.eus',	'Aingeru Bellido'),
+('nagoregomez',	'$2b$12$qmRWcn46PJcwLGzsQsSFr.AkLIudco6NPdiY1wHWa.sVvjZVgAtyi',	'ngomez067@ikasle.ehu.eus',	'Nagore Gómez'),
+('sergiomartin',	'$2b$12$qmRWcn46PJcwLGzsQsSFr.AkLIudco6NPdiY1wHWa.sVvjZVgAtyi',	'smartin128@ikasle.ehu.eus',	'Sergio Martín'),
+('maitaneurruela',	'$2b$12$qmRWcn46PJcwLGzsQsSFr.AkLIudco6NPdiY1wHWa.sVvjZVgAtyi',	'murruela002@ikasle.ehu.eus',	'Maitane Urruela'),
+('ikersobron',	'$2b$12$qmRWcn46PJcwLGzsQsSFr.AkLIudco6NPdiY1wHWa.sVvjZVgAtyi',	'iker.sobron@ehu.eus',	'Iker Sobrón');
 
 INSERT INTO "cudarillaAsistente" ("nombre", "id") VALUES
 ('PIKITO',	1);

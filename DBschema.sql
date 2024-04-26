@@ -53,7 +53,7 @@ CREATE TABLE "public"."seguidores" (
 DROP TABLE IF EXISTS "usuario";
 CREATE TABLE "public"."usuario" (
     "username" character varying(50) NOT NULL,
-    "password" character varying(50) NOT NULL,
+    "password" bytea NOT NULL,
     "email" character varying(50) NOT NULL,
     "nombre" character varying(50) NOT NULL,
     CONSTRAINT "usuario_username" PRIMARY KEY ("username")

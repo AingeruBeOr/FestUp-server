@@ -1,18 +1,116 @@
-from fastapi import FastAPI, Depends
+from fastapi import FastAPI, Depends, status
+from fastapi.responses import RedirectResponse
 from sqlalchemy.orm import Session
 import crud
 import database as db
+import api_models
+import bcrypt
+from fastapi.security import OAuth2PasswordRequestFormStrict
+from utils import get_verified_current_user, create_access_token, CREDENTIALS_EXCEPTION, create_refresh_token, TokenResponse, decode_token, OAuth2RefreshTokenForm
+
 
 app = FastAPI()
 
-@app.get("/")
-def root():
-    return {"message": "Hello World"}
+@app.get("/", include_in_schema=False)
+async def root():
+    return RedirectResponse(url='/docs')
 
-@app.get("/getUsers")
-def getUsers(db: Session = Depends(db.get_database)):
-    users = crud.get_users(db)
-    user_json = []
-    for user in users:
-        user_json.append({"username": user.username, "password": user.password, "email": user.email, "nombre": user.nombre})
-    return user_json
+
+# ---------------------------  USER ------------------------------
+
+
+@app.get("/getUsers", response_model=list[api_models.Usuario], status_code=status.HTTP_200_OK, tags=["Usuarios"])
+async def get_users(db: Session = Depends(db.get_database), current_user: str = Depends(get_verified_current_user)):
+    return crud.get_users(db)
+
+@app.post("/iniciarSesion", response_model=TokenResponse, status_code=status.HTTP_200_OK, tags=['Usuarios'])
+async def identificar(form_data: OAuth2PasswordRequestFormStrict = Depends(), db: Session = Depends(db.get_database)):
+    hashed_password = crud.get_user_password(db, username=form_data.username)
+
+    if hashed_password is None or not bcrypt.checkpw(form_data.password.encode('utf-8'), hashed_password):
+        raise HTTPException(status_code=404, detail="User or password is not correct.")
+
+    access_token, expire_in_seconds = create_access_token(data={"sub": form_data.username})
+    return {
+        "token_type": "bearer",
+        "expires_in": expire_in_seconds,
+        "access_token": access_token,
+        'refresh_token': create_refresh_token(data={"sub": form_data.username}),
+    }
+    
+@app.post("/refresh", tags=['Tokens'],
+          response_model=TokenResponse, status_code=status.HTTP_200_OK,
+          responses={
+              401: {"description": "Could not validate credentials."},
+              403: {"description": "This user does not exist anymore."}
+          })
+async def refresh(form_data: OAuth2RefreshTokenForm = Depends(), db: Session = Depends(db.get_database)):
+    try:
+        token = form_data.refresh_token
+        username = decode_token(token).get('sub')
+
+        # Validate email
+        if crud.get_user_password(db, username=username):
+            # Create and return token
+            access_token, expire_in_seconds = create_access_token(data={"sub": username})
+            return {
+                "token_type": "bearer",
+                "expires_in": expire_in_seconds,
+                "access_token": access_token,
+                'refresh_token': create_refresh_token(data={"sub": username}),
+            }
+        else:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="This user does not exist.")
+
+    except Exception:
+        raise CREDENTIALS_EXCEPTION
+
+
+@app.post("/createUser", tags=["Usuarios"],
+          response_model=api_models.Usuario, status_code=status.HTTP_201_CREATED,
+          responses={400: {"description": "Password is not valid."}, 409: {"description": "Username already registered."}}, )
+async def create_user(user: api_models.UsuarioAuth, db: Session = Depends(db.get_database)):
+    #if len(user.password) < 5:
+    #    raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Password is not valid.")
+
+    if not (db_user := crud.create_user(db=db, user=user)):
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Username already registered.")
+    return db_user
+
+# ---------------------------  USUARIO ASISTENTE ------------------------------
+
+@app.get("/getUsuariosAsistentes", response_model=list[api_models.UsuarioAsistente], status_code=status.HTTP_200_OK, tags=["Usuarios Assistentes"])
+async def get_users_asistentes(db: Session = Depends(db.get_database)):
+    return crud.get_users_asistentes(db)
+
+
+# ---------------------------  CUADRILLA ------------------------------
+
+@app.get("/getCuadrillas", response_model=list[api_models.Cuadrilla], status_code=status.HTTP_200_OK, tags=["Cuadrillas"])
+async def get_cuadrillas(db: Session = Depends(db.get_database)):
+    return crud.get_cuadrillas(db)
+
+
+# ---------------------------  CUADRILLA ASISTENTE ------------------------------
+
+@app.get("/getCuadrillasAsistentes", response_model=list[api_models.CuadrillaAsistente], status_code=status.HTTP_200_OK, tags=["Cuadrillas Asistentes"])
+async def get_cuadrillas_asistentes(db: Session = Depends(db.get_database)):
+    return crud.get_cuadrillas_asistentes(db)
+
+
+# ---------------------------  EVENTO ------------------------------
+
+@app.get("/getEventos", response_model=list[api_models.Evento], status_code=status.HTTP_200_OK, tags=["Eventos"])
+async def get_eventos(db: Session = Depends(db.get_database)):
+    return crud.get_eventos(db)
+
+# ---------------------------  INTEGRANTE ------------------------------
+@app.get("/getIntegrantes", response_model=list[api_models.Integrante], status_code=status.HTTP_200_OK, tags=["Integrantes"])
+async def get_integrantes(db: Session = Depends(db.get_database)):
+    return crud.get_integrantes(db)
+
+# ---------------------------  SEGUIDORES ------------------------------
+
+@app.get("/getSeguidores", response_model=list[api_models.Seguidores], status_code=status.HTTP_200_OK, tags=["Seguidores"])
+async def get_seguidores(db: Session = Depends(db.get_database)):
+    return crud.get_seguidores(db)

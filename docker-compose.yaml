@@ -14,6 +14,7 @@ services:
       POSTGRES_PASSWORD: 3jLykwCi5Rbn&cu
       POSTGRES_IP: postgres
       POSTGRES_DB: festup
+      API_JWT_SECRET_KEY: festUpEntrega3
 
   postgres:
     image: postgres:latest

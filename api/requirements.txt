@@ -2,3 +2,8 @@ fastapi
 uvicorn
 sqlalchemy
 psycopg2
+bcrypt
+pydantic
+datetime
+python-jose[cryptography]
+python-multipart
