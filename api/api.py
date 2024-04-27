@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Depends, status
+from fastapi import FastAPI, Depends, status, HTTPException
 from fastapi.responses import RedirectResponse
 from sqlalchemy.orm import Session
 import crud
@@ -17,7 +17,6 @@ async def root():
 
 
 # ---------------------------  USER ------------------------------
-
 
 @app.get("/getUsers", response_model=list[api_models.Usuario], status_code=status.HTTP_200_OK, tags=["Usuarios"])
 async def get_users(db: Session = Depends(db.get_database), current_user: str = Depends(get_verified_current_user)):
@@ -38,12 +37,8 @@ async def identificar(form_data: OAuth2PasswordRequestFormStrict = Depends(), db
         'refresh_token': create_refresh_token(data={"sub": form_data.username}),
     }
     
-@app.post("/refresh", tags=['Tokens'],
-          response_model=TokenResponse, status_code=status.HTTP_200_OK,
-          responses={
-              401: {"description": "Could not validate credentials."},
-              403: {"description": "This user does not exist anymore."}
-          })
+@app.post("/refresh", tags=['Tokens'], response_model=TokenResponse, status_code=status.HTTP_200_OK,
+          responses={401: {"description": "Could not validate credentials."},403: {"description": "This user does not exist anymore."}})
 async def refresh(form_data: OAuth2RefreshTokenForm = Depends(), db: Session = Depends(db.get_database)):
     try:
         token = form_data.refresh_token
@@ -77,11 +72,39 @@ async def create_user(user: api_models.UsuarioAuth, db: Session = Depends(db.get
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Username already registered.")
     return db_user
 
+@app.get("/getCuadrillasUsuario", response_model=list[api_models.Cuadrilla], status_code=status.HTTP_200_OK, tags=["Usuarios"])
+async def get_cuadrillas_usuario(username: str, db: Session = Depends(db.get_database), _: str = Depends(get_verified_current_user)):
+    return crud.get_cuadrillas_usuario(db, username)
+
+@app.get("/getSeguidosUsuario", response_model=list[api_models.Usuario], status_code=status.HTTP_200_OK, tags=["Usuarios"])
+async def get_seguidos_usuario(username: str, db: Session = Depends(db.get_database), _: str = Depends(get_verified_current_user)):
+    return crud.get_seguidos_usuario(db, username)
+
+@app.get("/getSeguidoresUsuario", response_model=list[api_models.Usuario], status_code=status.HTTP_200_OK, tags=["Usuarios"])
+async def get_seguidores_usuario(username: str, db: Session = Depends(db.get_database), _: str = Depends(get_verified_current_user)):
+    return crud.get_seguidores_usuario(db, username)
+
+
 # ---------------------------  USUARIO ASISTENTE ------------------------------
 
-@app.get("/getUsuariosAsistentes", response_model=list[api_models.UsuarioAsistente], status_code=status.HTTP_200_OK, tags=["Usuarios Assistentes"])
-async def get_users_asistentes(db: Session = Depends(db.get_database)):
-    return crud.get_users_asistentes(db)
+@app.get("/getUsuariosAsistentes", response_model=list[api_models.UsuarioAsistente], status_code=status.HTTP_200_OK, tags=["Usuarios Asistentes"])
+async def get_usuarios_asistentes(db: Session = Depends(db.get_database)):
+    return crud.get_usuarios_asistentes(db)
+
+@app.post("/insertUsuarioAsistente", response_model=api_models.UsuarioAsistente, status_code=status.HTTP_200_OK, tags=["Usuarios Asistentes"])
+async def insert_usuario_asistente(usuarioAsistente: api_models.UsuarioAsistente, db: Session = Depends(db.get_database)):
+    if not (db_asistente := crud.insert_usuario_asistente(db, usuarioAsistente)):
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Ese usuario ya está apuntado al evento")
+    return db_asistente
+
+@app.get("/getUsuariosAsistentesEvento", response_model=list[str], status_code=status.HTTP_200_OK, tags=["Usuarios Asistentes"])
+async def get_usuarios_asistentes_evento(eventoId: int, db: Session = Depends(db.get_database)):
+    return crud.get_usuarios_asistentes_evento(db, eventoId)
+
+@app.get("/getEventosUsuarioAsistente", response_model=list[int], status_code=status.HTTP_200_OK, tags=["Usuarios Asistentes"])
+async def get_eventos_usuario_asistente(username: str, db: Session = Depends(db.get_database)):
+    return crud.get_eventos_usuario_asistente(db, username)
+
 
 
 # ---------------------------  CUADRILLA ------------------------------
