@@ -73,6 +73,10 @@ def get_eventos_usuario_asistentes_data(db: Session, username: str) -> list[Even
 def get_future_eventos_usuario_asistentes_data(db: Session, username: str) -> list[Evento]:
     return db.query(Evento).join(UsuarioAsistente).filter((UsuarioAsistente.username==username) & (Evento.fecha >= datetime.date.today())).all()
 
+def delete_usuario_asistente(db: Session, usuarioAsistente: api_models.UsuarioAsistente) -> UsuarioAsistente | None:
+    db.delete(usuarioAsistente)
+    db.commit()
+    return usuarioAsistente
 # ---------------------------  CUADRILLA ------------------------------
 
 def get_cuadrillas(db: Session) -> list[row]:
@@ -91,7 +95,10 @@ def insert_cuadrilla(db: Session, cuadrilla: api_models.Cuadrilla) -> Cuadrilla 
         db.refresh(db_cuadrilla)
         return db_cuadrilla
 
-
+def delete_cuadrilla(db: Session, cuadrilla: api_models.Cuadrilla) -> Cuadrilla | None:
+    db.delete(cuadrilla)
+    db.commit()
+    return cuadrilla
 # ---------------------------  CUADRILLA ASISTENTE ------------------------------
 
 def get_cuadrillas_asistentes(db: Session) -> list[row]:
@@ -119,6 +126,14 @@ def insert_cuadrilla_asistente(db: Session, cuadrillaAsistente: api_models.Cuadr
         db.refresh(db_cuadrilla_asistente)
         return db_cuadrilla_asistente
 
+def get_cuadrilla_asistente(db: Session, cuadrillaAsistente: api_models.CuadrillaAsistente) -> CuadrillaAsistente | None:
+    return db.query(CuadrillaAsistente).filter((CuadrillaAsistente.nombre == cuadrillaAsistente.nombre) & (CuadrillaAsistente.id == CuadrillaAsistente.id)).first()
+
+
+def delete_cuadrilla_asistente(db: Session, cuadrillaAsistente: api_models.CuadrillaAsistente) -> CuadrillaAsistente | None:
+    db.delete(cuadrillaAsistente)
+    db.commit()
+    return cuadrillaAsistente
 
 # ---------------------------  EVENTO ------------------------------
 
@@ -138,6 +153,10 @@ def insert_evento(db: Session, evento: api_models.Evento) -> Evento | None:
         db.refresh(db_evento)
         return db_evento
 
+def delete_evento(db: Session, evento: api_models.Evento) -> Evento | None:
+    db.delete(evento)
+    db.commit()
+    return evento
 
 # ---------------------------  INTEGRANTE ------------------------------
 
@@ -157,6 +176,11 @@ def insert_integrante(db: Session, integrante: api_models.Integrante) -> Integra
         db.refresh(db_integrante)
         return db_integrante
 
+def delete_integrante(db: Session, integrante: api_models.Integrante) -> Integrante | None:
+    db.delete(integrante)
+    db.commit()
+    return integrante
+
 # ---------------------------  SEGUIDORES ------------------------------
 
 def get_seguidores(db: Session) -> list[row]:
@@ -174,3 +198,11 @@ def insert_seguidores(db: Session, seguidores: api_models.Seguidores) -> Seguido
         db.commit()
         db.refresh(db_seguidores)
         return db_seguidores
+
+def get_seguidor(db: Session, seguidor: api_models.Seguidores) -> Seguidores| None:
+    return db.query(Seguidores).filter((Seguidores.siguiendo == seguidor.siguiendo) & (Seguidores.seguido == seguidor.seguido)).first()
+
+def delete_seguidor(db: Session, seguidor: api_models.Seguidores) -> Seguidores | None:
+    db.delete(seguidor)
+    db.commit()
+    return seguidor
