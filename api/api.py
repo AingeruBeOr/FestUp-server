@@ -1,19 +1,31 @@
 from fastapi import FastAPI, Depends, status, HTTPException
 from fastapi.responses import RedirectResponse
+from fastapi.security import OAuth2PasswordRequestFormStrict
+from fastapi.staticfiles import StaticFiles
 from sqlalchemy.orm import Session
+import bcrypt
+import os
+import api_models
+from utils import get_verified_current_user, create_access_token, CREDENTIALS_EXCEPTION, create_refresh_token, TokenResponse, decode_token, OAuth2RefreshTokenForm
 import crud
 import database as db
-import api_models
-import bcrypt
-from fastapi.security import OAuth2PasswordRequestFormStrict
-from utils import get_verified_current_user, create_access_token, CREDENTIALS_EXCEPTION, create_refresh_token, TokenResponse, decode_token, OAuth2RefreshTokenForm
 
 
 app = FastAPI()
 
+if not os.path.exists('./userProfileImages'): os.mkdir('./userProfileImages')
+app.mount("/userProfileImages", StaticFiles(directory="userProfileImages"), name="userProfileImages")
+
+if not os.path.exists('./cuadrillaProfileImages'): os.mkdir('./cuadrillaProfileImages')
+app.mount("/cuadrillaProfileImages", StaticFiles(directory="cuadrillaProfileImages"), name="cuadrillaProfileImages")
+
+if not os.path.exists('./eventoImages'): os.mkdir('./eventoImages')
+app.mount("/eventoImages", StaticFiles(directory="eventoImages"), name="eventoImages")
+
 @app.get("/", include_in_schema=False)
 async def root():
     return RedirectResponse(url='/docs')
+
 
 
 # ---------------------------  USER ------------------------------
