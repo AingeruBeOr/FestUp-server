@@ -249,4 +249,4 @@ async def delete_seguidor(seguidor: api_models.Seguidores, db: Session = Depends
     if not (seguidor := crud.get_seguidor(db, seguidor)):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Ese usuario no sigue a ese otro usuario")
 
-    return crud.delete_integrante(db, seguidor)
+    return crud.delete_seguidor(db, seguidor)
