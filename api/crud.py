@@ -3,6 +3,7 @@ from sqlalchemy.engine import row
 from dbClasses import Usuario, UsuarioAsistente, Cuadrilla, CuadrillaAsistente, Evento, Integrante, Seguidores
 import api_models 
 import datetime
+import secrets
 
 # ---------------------------  USER ------------------------------
 
@@ -20,7 +21,7 @@ def create_user (db: Session, user: api_models.UsuarioAuth) -> Usuario | None:
     if get_user(db, username=user.username):
         return None
     else:
-        db_user = Usuario(username=user.username, password=user.hashed_password(), email=user.email, nombre=user.nombre)
+        db_user = Usuario(username=user.username, password=user.hashed_password(), email=user.email, nombre=user.nombre, profileImagePath = "api/userProfileImages/no-user.png")
         db.add(db_user)
         db.commit()
         db.refresh(db_user)
@@ -92,7 +93,8 @@ def insert_cuadrilla(db: Session, cuadrilla: api_models.Cuadrilla) -> Cuadrilla 
     if get_cuadrilla(db, cuadrilla.nombre):
         return None
     else:
-        db_cuadrilla = Cuadrilla(nombre=cuadrilla.nombre, descripcion=cuadrilla.descripcion, lugar=cuadrilla.lugar)
+        token = ''.join(secrets.choice('0123456789') for _ in range(8))
+        db_cuadrilla = Cuadrilla(nombre=cuadrilla.nombre, descripcion=cuadrilla.descripcion, lugar=cuadrilla.lugar, profileImagePath= "api/cuadrillaProfileImages/no-cuadrilla.png", accessToken= token)
         db.add(db_cuadrilla)
         db.commit()
         db.refresh(db_cuadrilla)
@@ -102,6 +104,13 @@ def delete_cuadrilla(db: Session, cuadrilla: api_models.Cuadrilla) -> Cuadrilla 
     db.delete(cuadrilla)
     db.commit()
     return cuadrilla
+
+def get_cuadrilla_access_token(db: Session, nombre_cuadrilla: str) -> str :
+    cuadrilla = db.query(Cuadrilla).filter(Cuadrilla.nombre == nombre_cuadrilla).first()
+    if cuadrilla:
+        return cuadrilla.accessToken
+    else:
+        return "Esa cuadrilla no existe"
 
 """
 def get_usuarios_cuadrilla(db: Session, nombre_cuadrilla: str) -> list[Usuario]:
@@ -157,7 +166,7 @@ def insert_evento(db: Session, evento: api_models.Evento) -> Evento | None:
     if get_evento(db, evento.id):
         return None
     else:
-        db_evento = Evento(id=evento.id, nombre=evento.nombre, fecha=evento.fecha, numeroAsistentes=evento.numeroAsistentes, descripcion=evento.descripcion, localizacion=evento.localizacion)
+        db_evento = Evento(id=evento.id, nombre=evento.nombre, fecha=evento.fecha, numeroAsistentes=evento.numeroAsistentes, descripcion=evento.descripcion, localizacion=evento.localizacion, eventoImagePath="api/eventoImages/no-image.png")
         db.add(db_evento)
         db.commit()
         db.refresh(db_evento)

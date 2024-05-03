@@ -19,7 +19,7 @@ class Usuario(BaseModel):
     username: str
     email: str
     nombre: str
-    #asistencias: Optional[List[UsuarioAsistente]]= None
+    profileImagePath: str
 
 
     class Config:
@@ -39,6 +39,8 @@ class Cuadrilla(BaseModel):
     nombre: str
     descripcion: str
     lugar: str
+    profileImagePath: str
+    accessToken: str
 
     class Config:
         orm_mode = True
@@ -60,6 +62,7 @@ class Evento(BaseModel):
     numeroAsistentes: int
     descripcion: str
     localizacion: str
+    eventoImagePath: str
 
     class Config:
         orm_mode = True

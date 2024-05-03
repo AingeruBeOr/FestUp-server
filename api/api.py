@@ -156,6 +156,11 @@ async def delete_cuadrilla(nombre: str, db: Session = Depends(db.get_database)):
 
     return crud.delete_cuadrilla(db, cuadrilla)
 
+@app.get("/getCuadrillaAccessToken", response_model=str, status_code=status.HTTP_200_OK, tags=["Cuadrillas"])
+async def get_cuadrilla_access_token(nombre: str,db: Session = Depends(db.get_database)):
+    return crud.get_cuadrilla_access_token(db,nombre)
+
+
 """
 @app.get("/getUsuariosCuadrilla", response_model=list[api_models.Usuario], status_code=status.HTTP_200_OK, tags=["Cuadrillas"])
 async def get_usuarios_cuadrilla(nombre: str, db: Session = Depends(db.get_database)):
