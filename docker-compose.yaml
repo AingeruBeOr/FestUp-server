@@ -23,7 +23,7 @@ services:
       POSTGRES_PASSWORD: 3jLykwCi5Rbn&cu
       POSTGRES_DB: festup
     healthcheck:
-      test: ["CMD", "pg_isready", "-d", "festup"]                  # Checks if 'festup' database is ready
+      test: ["CMD", "pg_isready", "-d", "festup", "-U", "festup_admin_ehu"] # Checks if 'festup' database is ready
       interval: 5s
       timeout: 5s
       retries: 5

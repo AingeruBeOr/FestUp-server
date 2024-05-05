@@ -21,7 +21,13 @@ def create_user (db: Session, user: api_models.UsuarioAuth) -> Usuario | None:
     if get_user(db, username=user.username):
         return None
     else:
-        db_user = Usuario(username=user.username, password=user.hashed_password(), email=user.email, nombre=user.nombre, profileImagePath = "api/userProfileImages/no-user.png")
+        db_user = Usuario(
+            username=user.username, 
+            password=user.hashed_password(), 
+            email=user.email, 
+            nombre=user.nombre,
+            fechaNacimiento=user.fechaNacimiento
+        )
         db.add(db_user)
         db.commit()
         db.refresh(db_user)
@@ -94,7 +100,7 @@ def insert_cuadrilla(db: Session, cuadrilla: api_models.Cuadrilla) -> Cuadrilla 
         return None
     else:
         token = ''.join(secrets.choice('0123456789') for _ in range(8))
-        db_cuadrilla = Cuadrilla(nombre=cuadrilla.nombre, descripcion=cuadrilla.descripcion, lugar=cuadrilla.lugar, profileImagePath= "api/cuadrillaProfileImages/no-cuadrilla.png", accessToken= token)
+        db_cuadrilla = Cuadrilla(nombre=cuadrilla.nombre, descripcion=cuadrilla.descripcion, lugar=cuadrilla.lugar, accessToken= token)
         db.add(db_cuadrilla)
         db.commit()
         db.refresh(db_cuadrilla)
@@ -166,7 +172,7 @@ def insert_evento(db: Session, evento: api_models.Evento) -> Evento | None:
     if get_evento(db, evento.id):
         return None
     else:
-        db_evento = Evento(id=evento.id, nombre=evento.nombre, fecha=evento.fecha, numeroAsistentes=evento.numeroAsistentes, descripcion=evento.descripcion, localizacion=evento.localizacion, eventoImagePath="api/eventoImages/no-image.png")
+        db_evento = Evento(id=evento.id, nombre=evento.nombre, fecha=evento.fecha, numeroAsistentes=evento.numeroAsistentes, descripcion=evento.descripcion, localizacion=evento.localizacion)
         db.add(db_evento)
         db.commit()
         db.refresh(db_evento)

@@ -10,7 +10,7 @@ class Usuario(Base):
     password = Column(LargeBinary)
     email = Column(String)
     nombre = Column(String)
-    profileImagePath = Column(String)
+    fechaNacimiento = Column(Date)
 
     #asistencias = relationship("UsuarioAsistente")
 
@@ -20,7 +20,6 @@ class Cuadrilla(Base):
     nombre = Column(String, primary_key=True)
     descripcion = Column(Text)
     lugar = Column(String)
-    profileImagePath = Column(String)
     accessToken = Column(String)
 
     #asistentes = relationship("CuadrillaAsistente")
@@ -42,7 +41,6 @@ class Evento(Base):
     numeroAsistentes = Column(Integer)
     descripcion = Column(Text)
     localizacion = Column(String)
-    eventoImagePath = Column(String)
 
 class Integrante(Base):
     __tablename__ = 'integrante'

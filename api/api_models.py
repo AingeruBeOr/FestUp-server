@@ -19,13 +19,13 @@ class Usuario(BaseModel):
     username: str
     email: str
     nombre: str
-    profileImagePath: str
+    fechaNacimiento: str
 
 
     class Config:
         orm_mode = True
 
-
+# Inherits Usuario properties
 class UsuarioAuth(Usuario):
     password: str
 
@@ -39,7 +39,6 @@ class Cuadrilla(BaseModel):
     nombre: str
     descripcion: str
     lugar: str
-    profileImagePath: str
     accessToken: str
 
     class Config:
@@ -56,13 +55,12 @@ class CuadrillaAsistente(BaseModel):
 
 
 class Evento(BaseModel):
-    id: int
+    id: str # TODO cambiar cuando se genere en el server
     nombre: str
-    fecha: date
+    fecha: str
     numeroAsistentes: int
     descripcion: str
     localizacion: str
-    eventoImagePath: str
 
     class Config:
         orm_mode = True

@@ -1,12 +1,13 @@
-from fastapi import FastAPI, Depends, status, HTTPException
+from fastapi import FastAPI, Depends, status, HTTPException, UploadFile
 from fastapi.responses import RedirectResponse
 from fastapi.security import OAuth2PasswordRequestFormStrict
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy.orm import Session
 import bcrypt
 import os
+import random
 import api_models
-from utils import get_verified_current_user, create_access_token, CREDENTIALS_EXCEPTION, create_refresh_token, TokenResponse, decode_token, OAuth2RefreshTokenForm
+from utils import get_verified_current_user, create_access_token, CREDENTIALS_EXCEPTION, create_refresh_token, TokenResponse, decode_token, OAuth2RefreshTokenForm, apiDateStrToDatabaseStr
 import crud
 import database as db
 
@@ -45,7 +46,7 @@ async def identificar(form_data: OAuth2PasswordRequestFormStrict = Depends(), db
         "access_token": access_token,
         'refresh_token': create_refresh_token(data={"sub": form_data.username}),
     }
-    
+
 @app.post("/refresh", tags=['Tokens'], response_model=TokenResponse, status_code=status.HTTP_200_OK,
           responses={401: {"description": "Could not validate credentials."},403: {"description": "This user does not exist anymore."}})
 async def refresh(form_data: OAuth2RefreshTokenForm = Depends(), db: Session = Depends(db.get_database)):
@@ -77,9 +78,16 @@ async def create_user(user: api_models.UsuarioAuth, db: Session = Depends(db.get
     #if len(user.password) < 5:
     #    raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Password is not valid.")
 
+    user.fechaNacimiento = apiDateStrToDatabaseStr(user.fechaNacimiento)
     if not (db_user := crud.create_user(db=db, user=user)):
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Username already registered.")
-    return db_user
+    user_to_return = api_models.Usuario(
+        username=db_user.username, 
+        email=db_user.email, 
+        nombre=db_user.nombre, 
+        fechaNacimiento=db_user.fechaNacimiento.strftime('%d/%m/%Y')
+    )
+    return user_to_return
 
 """
 @app.get("/getCuadrillasUsuario", response_model=list[api_models.Cuadrilla], status_code=status.HTTP_200_OK, tags=["Usuarios"])
@@ -99,6 +107,17 @@ async def get_seguidores_usuario(username: str, db: Session = Depends(db.get_dat
 async def get_users(db: Session = Depends(db.get_database), current_user: str = Depends(get_verified_current_user)):
     return crud.get_users(db)
 
+@app.put("/userProfileImages", tags=["Usuarios"], status_code=status.HTTP_200_OK)
+async def insert_cuadrilla_image(image: UploadFile, _: str = Depends(get_verified_current_user)):
+    with open(f'./userProfileImages/{image.filename}', 'wb') as f:
+        f.write(await image.read())
+
+@app.get("/getUser", response_model=api_models.Usuario, status_code=status.HTTP_200_OK, tags=["Usuarios"])
+async def get_user(username: str, db: Session = Depends(db.get_database), current_user: str = Depends(get_verified_current_user)):
+    user = crud.get_user(db, username)
+    if not user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+    return user
 # ---------------------------  USUARIO ASISTENTE ------------------------------
 
 @app.get("/getUsuariosAsistentes", response_model=list[api_models.UsuarioAsistente], status_code=status.HTTP_200_OK, tags=["Usuarios Asistentes"])
@@ -148,6 +167,11 @@ async def insert_cuadrilla(cuadrilla: api_models.Cuadrilla, db: Session = Depend
     if not (db_cuadrilla := crud.insert_cuadrilla(db, cuadrilla)):
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Esa cuadrilla ya existe")
     return db_cuadrilla
+
+@app.put("/insertCuadrillaImage", tags=["Cuadrillas"], status_code=status.HTTP_200_OK)
+async def insert_cuadrilla_image(image: UploadFile, _: str = Depends(get_verified_current_user)):
+    with open(f'./cuadrillaProfileImages/{image.filename}', 'wb') as f:
+        f.write(await image.read())
 
 @app.post("/deleteCuadrilla", response_model=api_models.Cuadrilla, status_code=status.HTTP_200_OK, tags=["Cuadrillas"])
 async def delete_cuadrilla(nombre: str, db: Session = Depends(db.get_database), _: str = Depends(get_verified_current_user)):
@@ -220,6 +244,7 @@ async def get_evento_data_from_id(eventoId: int, db: Session = Depends(db.get_da
 
 @app.post("/insertEvento", response_model=api_models.Evento, status_code=status.HTTP_200_OK, tags=["Eventos"])
 async def insert_evento(evento: api_models.Evento, db: Session = Depends(db.get_database), _: str = Depends(get_verified_current_user)):
+    evento.id = random.randint(0, 40000) # TODO cambiar
     if not (db_evento := crud.insert_evento(db, evento)):
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Ese evento ya existe")
     return db_evento

@@ -104,3 +104,13 @@ async def get_verified_current_user(token: str = Depends(oauth2_scheme), db: Ses
         raise CREDENTIALS_EXCEPTION
 
     return token_data.username
+
+# ---------------------------------------------------------
+#  Data
+# ---------------------------------------------------------
+
+def apiDateStrToDatabaseStr(date: str) -> str:
+    birthDateDay = date.split('/')[0]
+    birthDateMonth = date.split('/')[1]
+    birthDateYear = date.split('/')[2]
+    return f'{birthDateYear}-{birthDateMonth}-{birthDateDay}'

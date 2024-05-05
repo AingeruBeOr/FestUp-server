@@ -7,7 +7,6 @@ CREATE TABLE "public"."cuadrilla" (
     "nombre" character varying(50) NOT NULL,
     "descripcion" text NOT NULL,
     "lugar" character varying(50) NOT NULL,
-    "profileImagePath" character(300),
     "accessToken" character varying(300),
     CONSTRAINT "cuadrilla_nombre" PRIMARY KEY ("nombre")
 ) WITH (oids = false);
@@ -32,7 +31,6 @@ CREATE TABLE "public"."evento" (
     "numeroAsistentes" integer,
     "descripcion" text NOT NULL,
     "localizacion" character varying(50) NOT NULL,
-    "eventoImagePath" character varying(300),
     CONSTRAINT "evento_pkey" PRIMARY KEY ("id")
 ) WITH (oids = false);
 
@@ -60,7 +58,6 @@ CREATE TABLE "public"."usuario" (
     "email" character varying(50) NOT NULL,
     "nombre" character varying(50) NOT NULL,
     "fechaNacimiento" date,
-    "profileImagePath" character varying(300),
     CONSTRAINT "usuario_username" PRIMARY KEY ("username")
 ) WITH (oids = false);
 
@@ -85,4 +82,4 @@ ALTER TABLE ONLY "public"."seguidores" ADD CONSTRAINT "followers_following_fkey"
 ALTER TABLE ONLY "public"."usuarioAsistente" ADD CONSTRAINT "usuarioAsistente_id_fkey" FOREIGN KEY (id) REFERENCES evento(id) ON UPDATE CASCADE ON DELETE CASCADE NOT DEFERRABLE;
 ALTER TABLE ONLY "public"."usuarioAsistente" ADD CONSTRAINT "usuarioAsistente_username_fkey" FOREIGN KEY (username) REFERENCES usuario(username) ON UPDATE CASCADE ON DELETE CASCADE NOT DEFERRABLE;
 
--- 2024-05-01 09:18:54.097551+00
+-- 2024-05-04 14:30:36.479895+00
