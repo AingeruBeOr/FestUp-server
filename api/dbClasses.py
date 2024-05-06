@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, Text, Integer, Date, ForeignKey, LargeBinary
+from sqlalchemy import Column, String, Text, Integer, Date, ForeignKey, LargeBinary, Uuid
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 
@@ -26,16 +26,16 @@ class Cuadrilla(Base):
 
 
 class CuadrillaAsistente(Base):
-    __tablename__ = 'cudarillaAsistente'
+    __tablename__ = 'cuadrillaAsistente'
     nombre = Column(String, ForeignKey('cuadrilla.nombre'), primary_key=True)
-    id = Column(Integer, ForeignKey('evento.id'), primary_key=True)
+    id = Column(Uuid, ForeignKey('evento.id'), primary_key=True)
 
     #cuadrilla = relationship("Cuadrilla", overlaps="asistentes")
     #evento = relationship("Evento")
 
 class Evento(Base):
     __tablename__ = 'evento'
-    id = Column(Integer, primary_key=True)
+    id = Column(Uuid, primary_key=True, server_default='gen_random_uuid()')
     nombre = Column(String)
     fecha = Column(Date)
     numeroAsistentes = Column(Integer)
@@ -55,7 +55,7 @@ class Seguidores(Base):
 class UsuarioAsistente(Base):
     __tablename__ = 'usuarioAsistente'
     username = Column(String, ForeignKey('usuario.username'), primary_key=True)
-    id = Column(Integer, ForeignKey('evento.id'), primary_key=True)
+    id = Column(Uuid, ForeignKey('evento.id'), primary_key=True)
 
     #usuario = relationship("User", overlaps="asistencias")
     #evento = relationship("Evento")

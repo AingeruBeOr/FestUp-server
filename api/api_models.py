@@ -7,7 +7,7 @@ from sqlalchemy import Text
 
 class UsuarioAsistente(BaseModel):
     username: str
-    id: int
+    idEvento: str
 
     class Config:
         orm_mode = True
@@ -47,7 +47,7 @@ class Cuadrilla(BaseModel):
 
 class CuadrillaAsistente(BaseModel):
     nombre: str
-    id: int
+    id: str
 
     class Config:
         orm_mode = True
@@ -55,7 +55,7 @@ class CuadrillaAsistente(BaseModel):
 
 
 class Evento(BaseModel):
-    id: str # TODO cambiar cuando se genere en el server
+    id: str
     nombre: str
     fecha: str
     numeroAsistentes: int
@@ -77,7 +77,7 @@ class Integrante(BaseModel):
 
 
 class Seguidores(BaseModel):
-    siguiendo: str
+    seguidor: str
     seguido: str
 
     class Config:

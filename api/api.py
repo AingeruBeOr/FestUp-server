@@ -105,10 +105,22 @@ async def get_seguidores_usuario(username: str, db: Session = Depends(db.get_dat
 """
 @app.get("/getUsers", response_model=list[api_models.Usuario], status_code=status.HTTP_200_OK, tags=["Usuarios"])
 async def get_users(db: Session = Depends(db.get_database), current_user: str = Depends(get_verified_current_user)):
-    return crud.get_users(db)
+    db_usuarios = crud.get_users(db)
+    
+    usuarios_to_return = [
+        api_models.Usuario(
+            username=usuario.username,
+            email=usuario.email,
+            nombre=usuario.nombre,
+            fechaNacimiento=usuario.fechaNacimiento.strftime('%d/%m/%Y')
+        ) for usuario in db_usuarios
+    ]
+    
+    return usuarios_to_return
 
-@app.put("/userProfileImages", tags=["Usuarios"], status_code=status.HTTP_200_OK)
-async def insert_cuadrilla_image(image: UploadFile, _: str = Depends(get_verified_current_user)):
+@app.put("/setUserProfileImage", tags=["Usuarios"], status_code=status.HTTP_200_OK)
+async def insert_usuario_image(image: UploadFile):
+    print('Saving user profile image')
     with open(f'./userProfileImages/{image.filename}', 'wb') as f:
         f.write(await image.read())
 
@@ -117,18 +129,39 @@ async def get_user(username: str, db: Session = Depends(db.get_database), curren
     user = crud.get_user(db, username)
     if not user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
-    return user
+
+    usuario_to_return = api_models.Usuario(
+        username=user.username,
+        email=user.email,
+        nombre=user.nombre,
+        fechaNacimiento=user.fechaNacimiento.strftime('%d/%m/%Y')
+    ) 
+    
+    return usuario_to_return
 # ---------------------------  USUARIO ASISTENTE ------------------------------
 
 @app.get("/getUsuariosAsistentes", response_model=list[api_models.UsuarioAsistente], status_code=status.HTTP_200_OK, tags=["Usuarios Asistentes"])
 async def get_usuarios_asistentes(db: Session = Depends(db.get_database), _: str = Depends(get_verified_current_user)):
-    return crud.get_usuarios_asistentes(db)
+
+    db_asistentes = crud.get_usuarios_asistentes(db)
+    
+    asistentes_to_return = [
+        api_models.UsuarioAsistente(
+            username = db_asistente.username,
+            idEvento = str(db_asistente.id)
+        ) for db_asistente in db_asistentes
+    ]
+    
+    return asistentes_to_return
 
 @app.post("/insertUsuarioAsistente", response_model=api_models.UsuarioAsistente, status_code=status.HTTP_200_OK, tags=["Usuarios Asistentes"])
 async def insert_usuario_asistente(usuarioAsistente: api_models.UsuarioAsistente, db: Session = Depends(db.get_database), _: str = Depends(get_verified_current_user)):
     if not (db_asistente := crud.insert_usuario_asistente(db, usuarioAsistente)):
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Ese usuario ya está apuntado al evento")
-    return db_asistente
+    return api_models.UsuarioAsistente(
+        username = db_asistente.username,
+        idEvento = str(db_asistente.id)
+    )
 
 """
 @app.get("/getUsuariosAsistentesEvento", response_model=list[str], status_code=status.HTTP_200_OK, tags=["Usuarios Asistentes"])
@@ -154,7 +187,12 @@ async def delete_usuario_asistente(usuarioAsistente: api_models.UsuarioAsistente
     if not (usuarioAsistente := crud.get_usuario_asistente(db, usuarioAsistente)):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Ese usuario no asiste a ese evento")
 
-    return crud.delete_usuario_asistente(db, usuarioAsistente)
+    deleted_usuarios = crud.delete_usuario_asistente(db, usuarioAsistente)
+
+    return api_models.UsuarioAsistente(
+        username = deleted_usuarios.username,
+        idEvento = str(deleted_usuarios.id)
+    )
 
 # ---------------------------  CUADRILLA ------------------------------
 
@@ -199,7 +237,13 @@ async def get_cuadrilla_data(nombre: str, db: Session = Depends(db.get_database)
 
 @app.get("/getCuadrillasAsistentes", response_model=list[api_models.CuadrillaAsistente], status_code=status.HTTP_200_OK, tags=["Cuadrillas Asistentes"])
 async def get_cuadrillas_asistentes(db: Session = Depends(db.get_database), _: str = Depends(get_verified_current_user)):
-    return crud.get_cuadrillas_asistentes(db)
+    cuadrilla_asistentes = crud.get_cuadrillas_asistentes(db)
+    return [
+        api_models.CuadrillaAsistente(
+            nombre = cuadrilla_asistente.nombre,
+            id = str(cuadrilla_asistente.id)
+        ) for cuadrilla_asistente in cuadrilla_asistentes
+    ]
 
 """
 @app.get("/getEventosFromCuadrilla", response_model=list[api_models.Evento], status_code=status.HTTP_200_OK, tags=["Cuadrillas Asistentes"])
@@ -220,21 +264,41 @@ async def get_cuadrillas_from_evento(eventoId: int, db: Session = Depends(db.get
 async def insert_cuadrilla_asistente(cuadrillaAsistente: api_models.CuadrillaAsistente, db: Session = Depends(db.get_database), _: str = Depends(get_verified_current_user)):
     if not (db_cuadrilla_asistente := crud.insert_cuadrilla_asistente(db, cuadrillaAsistente)):
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Esa cuadrilla ya está apuntada al evento")
-    return db_cuadrilla_asistente
+    return api_models.CuadrillaAsistente(
+            nombre = db_cuadrilla_asistente.nombre,
+            id = str(db_cuadrilla_asistente.id)
+        )
 
 @app.post("/deleteCuadrillaAsistente", response_model=api_models.CuadrillaAsistente, status_code=status.HTTP_200_OK, tags=["Cuadrillas Asistentes"])
 async def delete_cuadrilla_asistente(cuadrillaAsistente: api_models.CuadrillaAsistente, db: Session = Depends(db.get_database), _: str = Depends(get_verified_current_user)):
     if not (cuadrillaAsistente := crud.get_cuadrilla_asistente(db, cuadrillaAsistente)):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Esa cuadrilla no asiste a ese evento")
 
-    return crud.delete_cuadrilla_asistente(db, cuadrillaAsistente)
+    deleted_cuadrilla = crud.delete_cuadrilla_asistente(db, cuadrillaAsistente)
+    return api_models.CuadrillaAsistente(
+            nombre = deleted_cuadrilla.nombre,
+            id = str(deleted_cuadrilla.id)
+        )
 
 
 # ---------------------------  EVENTO ------------------------------
 
 @app.get("/getEventos", response_model=list[api_models.Evento], status_code=status.HTTP_200_OK, tags=["Eventos"])
 async def get_eventos(db: Session = Depends(db.get_database), _: str = Depends(get_verified_current_user)):
-    return crud.get_eventos(db)
+    db_eventos = crud.get_eventos(db)
+    
+    eventos_to_return = [
+        api_models.Evento(
+        id = str(db_evento.id),
+        nombre = db_evento.nombre,
+        fecha = db_evento.fecha.strftime('%d/%m/%Y'),
+        numeroAsistentes = db_evento.numeroAsistentes,
+        descripcion = db_evento.descripcion,
+        localizacion = db_evento.localizacion
+        ) for db_evento in db_eventos
+    ]
+    
+    return eventos_to_return
 """
 @app.get("/getEventoDataFromId", response_model=api_models.Evento, status_code=status.HTTP_200_OK, tags=["Eventos"])
 async def get_evento_data_from_id(eventoId: int, db: Session = Depends(db.get_database)):
@@ -244,17 +308,38 @@ async def get_evento_data_from_id(eventoId: int, db: Session = Depends(db.get_da
 
 @app.post("/insertEvento", response_model=api_models.Evento, status_code=status.HTTP_200_OK, tags=["Eventos"])
 async def insert_evento(evento: api_models.Evento, db: Session = Depends(db.get_database), _: str = Depends(get_verified_current_user)):
-    evento.id = random.randint(0, 40000) # TODO cambiar
+    #evento.id = random.randint(0, 40000) # TODO cambiar
     if not (db_evento := crud.insert_evento(db, evento)):
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Ese evento ya existe")
-    return db_evento
+    evento_to_return = api_models.Evento(
+        id = str(db_evento.id), # because db_evento.id is a UUID
+        nombre = db_evento.nombre,
+        fecha = db_evento.fecha.strftime('%d/%m/%Y'),
+        numeroAsistentes = db_evento.numeroAsistentes,
+        descripcion = db_evento.descripcion,
+        localizacion = db_evento.localizacion
+    )
+    return evento_to_return
+
+@app.put("/insertEventoImage", tags=["Eventos"], status_code=status.HTTP_200_OK)
+async def insert_evento_image(image: UploadFile, _: str = Depends(get_verified_current_user)):
+    with open(f'./eventoImages/{image.filename}', 'wb') as f:
+        f.write(await image.read())
 
 @app.post("/deleteEvento", response_model=api_models.Evento, status_code=status.HTTP_200_OK, tags=["Eventos"])
-async def delete_evento(eventoId: int, db: Session = Depends(db.get_database), _: str = Depends(get_verified_current_user)):
+async def delete_evento(eventoId: str, db: Session = Depends(db.get_database), _: str = Depends(get_verified_current_user)):
     if not (evento := crud.get_evento(db, eventoId)):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Ese evento no existe")
 
-    return crud.delete_evento(db, evento)
+    deleted_evento = crud.delete_evento(db, evento)
+    return api_models.Evento(
+        id = str(deleted_evento.id),
+        nombre = deleted_evento.nombre,
+        fecha = deleted_evento.fecha.strftime('%d/%m/%Y'),
+        numeroAsistentes = deleted_evento.numeroAsistentes,
+        descripcion = deleted_evento.descripcion,
+        localizacion = deleted_evento.localizacion
+    )
 
 
 # ---------------------------  INTEGRANTE ------------------------------
@@ -286,7 +371,10 @@ async def get_seguidores(db: Session = Depends(db.get_database), _: str = Depend
 async def insert_seguidores(seguidores: api_models.Seguidores, db: Session = Depends(db.get_database), _: str = Depends(get_verified_current_user)):
     if not (db_seguidores := crud.insert_seguidores(db, seguidores)):
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=f"'{seguidores.siguiendo}' ya sigue a '{seguidores.seguido}'")
-    return db_seguidores
+    return api_models.Seguidores(
+        seguidor = db_seguidores.siguiendo,
+        seguido = db_seguidores.seguido
+    )
 
 
 @app.post("/deleteSeguidor", response_model=api_models.Seguidores, status_code=status.HTTP_200_OK, tags=["Seguidores"])
@@ -294,4 +382,8 @@ async def delete_seguidor(seguidor: api_models.Seguidores, db: Session = Depends
     if not (seguidor := crud.get_seguidor(db, seguidor)):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Ese usuario no sigue a ese otro usuario")
 
-    return crud.delete_seguidor(db, seguidor)
+    deleted_seguidor = crud.delete_seguidor(db, seguidor)
+    return api_models.Seguidores(
+        seguidor = deleted_seguidor.siguiendo,
+        seguido = deleted_seguidor.seguido
+    )

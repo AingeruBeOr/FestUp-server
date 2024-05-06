@@ -54,14 +54,14 @@ def get_usuarios_asistentes(db: Session) -> list[row]:
 
 
 def get_usuario_asistente(db: Session, usuarioAsistente: api_models.UsuarioAsistente) -> UsuarioAsistente | None:
-    return db.query(UsuarioAsistente).filter((UsuarioAsistente.username == usuarioAsistente.username) & (UsuarioAsistente.id == usuarioAsistente.id)).first()
+    return db.query(UsuarioAsistente).filter((UsuarioAsistente.username == usuarioAsistente.username) & (UsuarioAsistente.id == usuarioAsistente.idEvento)).first()
 
 
 def insert_usuario_asistente(db: Session, usuarioAsistente: api_models.UsuarioAsistente) -> UsuarioAsistente | None:
     if get_usuario_asistente(db, usuarioAsistente):
         return None
     else:
-        db_usuario_asistente= UsuarioAsistente(username=usuarioAsistente.username, id=usuarioAsistente.id)
+        db_usuario_asistente= UsuarioAsistente(username=usuarioAsistente.username, id=usuarioAsistente.idEvento)
         db.add(db_usuario_asistente)
         db.commit()
         db.refresh(db_usuario_asistente)
@@ -165,18 +165,18 @@ def delete_cuadrilla_asistente(db: Session, cuadrillaAsistente: api_models.Cuadr
 def get_eventos(db: Session) -> list[row]:
     return db.query(Evento).all()
 
-def get_evento(db: Session, eventoId: int) -> Evento | None:
+def get_evento(db: Session, eventoId: str) -> Evento | None:
     return db.query(Evento).filter(Evento.id == eventoId).first()
 
 def insert_evento(db: Session, evento: api_models.Evento) -> Evento | None:
-    if get_evento(db, evento.id):
+    '''if get_evento(db, evento.id):
         return None
-    else:
-        db_evento = Evento(id=evento.id, nombre=evento.nombre, fecha=evento.fecha, numeroAsistentes=evento.numeroAsistentes, descripcion=evento.descripcion, localizacion=evento.localizacion)
-        db.add(db_evento)
-        db.commit()
-        db.refresh(db_evento)
-        return db_evento
+    else:'''
+    db_evento = Evento(nombre=evento.nombre, fecha=evento.fecha, numeroAsistentes=evento.numeroAsistentes, descripcion=evento.descripcion, localizacion=evento.localizacion)
+    db.add(db_evento)
+    db.commit()
+    db.refresh(db_evento)
+    return db_evento
 
 def delete_evento(db: Session, evento: api_models.Evento) -> Evento | None:
     db.delete(evento)
@@ -220,14 +220,14 @@ def insert_seguidores(db: Session, seguidores: api_models.Seguidores) -> Seguido
     if get_seguidor(db, seguidores):
         return None
     else: 
-        db_seguidores = Seguidores(siguiendo=seguidores.siguiendo, seguido=seguidores.seguido)
+        db_seguidores = Seguidores(siguiendo=seguidores.seguidor, seguido=seguidores.seguido)
         db.add(db_seguidores)
         db.commit()
         db.refresh(db_seguidores)
         return db_seguidores
 
 def get_seguidor(db: Session, seguidor: api_models.Seguidores) -> Seguidores| None:
-    return db.query(Seguidores).filter((Seguidores.siguiendo == seguidor.siguiendo) & (Seguidores.seguido == seguidor.seguido)).first()
+    return db.query(Seguidores).filter((Seguidores.siguiendo == seguidor.seguidor) & (Seguidores.seguido == seguidor.seguido)).first()
 
 def delete_seguidor(db: Session, seguidor: api_models.Seguidores) -> Seguidores | None:
     db.delete(seguidor)
