@@ -15,7 +15,7 @@ services:
       POSTGRES_IP: postgres
       POSTGRES_DB: festup
       API_JWT_SECRET_KEY: festUpEntrega3
-
+      
   postgres:
     image: postgres:latest
     environment:
@@ -28,8 +28,7 @@ services:
       timeout: 5s
       retries: 5
     volumes:
-      - ./DBschema.sql:/docker-entrypoint-initdb.d/DBschema.sql      # Initializes the database with the schema
-      - ./DBtestData.sql:/docker-entrypoint-initdb.d/DBtestData.sql  # Initializes the database with test data
+      - ./database:/docker-entrypoint-initdb.d
 
   adminer:
     image: adminer

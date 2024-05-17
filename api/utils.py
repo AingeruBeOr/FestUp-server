@@ -54,7 +54,7 @@ class OAuth2RefreshTokenForm:
 # ---------------------------------------------------------
 #  OAUTH2
 # ---------------------------------------------------------
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/iniciarSesion")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/iniciarSesion")
 
 
 # ---------------------------------------------------------
@@ -73,6 +73,7 @@ def create_token(data: dict, expires_delta: timedelta | None = None):
 
 
 def create_access_token(data: dict) -> tuple[str, int]:
+    print(f"create token: {data}")
     access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = create_token(data, expires_delta=access_token_expires)
     return access_token, ACCESS_TOKEN_EXPIRE_MINUTES * 60
@@ -91,6 +92,9 @@ async def get_verified_current_user(token: str = Depends(oauth2_scheme), db: Ses
     try:
         payload = decode_token(token)
         username: str = payload.get("sub")
+
+        print(f"verified: {username}")
+        print(f"token: {token}")
 
         if username is None:
             raise CREDENTIALS_EXCEPTION

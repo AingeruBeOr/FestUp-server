@@ -20,6 +20,7 @@ class Usuario(BaseModel):
     email: str
     nombre: str
     fechaNacimiento: str
+    telefono: str
 
 
     class Config:
@@ -58,7 +59,6 @@ class Evento(BaseModel):
     id: str
     nombre: str
     fecha: str
-    numeroAsistentes: int
     descripcion: str
     localizacion: str
 
@@ -82,3 +82,11 @@ class Seguidores(BaseModel):
 
     class Config:
         orm_mode = True
+
+
+class Message(BaseModel):
+    title: str
+    body: str | None
+
+class FirebaseClientToken(BaseModel):
+    fcm_client_token: str

@@ -11,6 +11,7 @@ class Usuario(Base):
     email = Column(String)
     nombre = Column(String)
     fechaNacimiento = Column(Date)
+    telefono = Column(String)
 
     #asistencias = relationship("UsuarioAsistente")
 
@@ -38,7 +39,6 @@ class Evento(Base):
     id = Column(Uuid, primary_key=True, server_default='gen_random_uuid()')
     nombre = Column(String)
     fecha = Column(Date)
-    numeroAsistentes = Column(Integer)
     descripcion = Column(Text)
     localizacion = Column(String)
 

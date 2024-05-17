@@ -26,12 +26,25 @@ def create_user (db: Session, user: api_models.UsuarioAuth) -> Usuario | None:
             password=user.hashed_password(), 
             email=user.email, 
             nombre=user.nombre,
-            fechaNacimiento=user.fechaNacimiento
+            fechaNacimiento=user.fechaNacimiento,
+            telefono=user.telefono
         )
         db.add(db_user)
         db.commit()
         db.refresh(db_user)
         return db_user
+
+def update_user(db: Session, user: api_models.Usuario) -> Usuario | None:
+    user_db = get_user(db, username=user.username)
+    if user_db == None:
+        return None
+    else:
+        user_db.email = user.email
+        user_db.fechaNacimiento = user.fechaNacimiento
+        user_db.nombre = user.nombre
+        user_db.telefono = user.telefono
+        db.commit()
+        return user_db
 
 """
 def get_cuadrillas_usuario (db: Session, username: str)-> list[row]:
@@ -172,7 +185,7 @@ def insert_evento(db: Session, evento: api_models.Evento) -> Evento | None:
     '''if get_evento(db, evento.id):
         return None
     else:'''
-    db_evento = Evento(nombre=evento.nombre, fecha=evento.fecha, numeroAsistentes=evento.numeroAsistentes, descripcion=evento.descripcion, localizacion=evento.localizacion)
+    db_evento = Evento(nombre=evento.nombre, fecha=evento.fecha, descripcion=evento.descripcion, localizacion=evento.localizacion)
     db.add(db_evento)
     db.commit()
     db.refresh(db_evento)

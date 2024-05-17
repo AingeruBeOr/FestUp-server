@@ -3,3 +3,7 @@ __pycache__/
 api/userProfileImages/
 api/cuadrillaProfileImages/
 api/eventoImages/
+
+firebase_key.json
+
+crontab.log

@@ -7,3 +7,5 @@ pydantic
 datetime
 python-jose[cryptography]
 python-multipart
+firebase-admin
+unidecode

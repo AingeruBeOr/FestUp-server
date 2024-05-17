@@ -1,4 +1,4 @@
--- Adminer 4.8.1 PostgreSQL 16.2 (Debian 16.2-1.pgdg120+2) dump
+-- Adminer 4.8.1 PostgreSQL 16.3 (Debian 16.3-1.pgdg120+1) dump
 
 \connect "festup";
 
@@ -12,26 +12,22 @@ CREATE TABLE "public"."cuadrilla" (
 ) WITH (oids = false);
 
 
-DROP TABLE IF EXISTS "cudarillaAsistente";
-CREATE TABLE "public"."cudarillaAsistente" (
+DROP TABLE IF EXISTS "cuadrillaAsistente";
+CREATE TABLE "public"."cuadrillaAsistente" (
     "nombre" character varying(50) NOT NULL,
-    "id" integer NOT NULL,
+    "id" uuid NOT NULL,
     CONSTRAINT "CudarillaAsistente_nombre_id" PRIMARY KEY ("nombre", "id")
 ) WITH (oids = false);
 
 
 DROP TABLE IF EXISTS "evento";
-DROP SEQUENCE IF EXISTS evento_id_seq;
-CREATE SEQUENCE evento_id_seq INCREMENT 1 MINVALUE 1 MAXVALUE 2147483647 CACHE 1;
-
 CREATE TABLE "public"."evento" (
-    "id" integer DEFAULT nextval('evento_id_seq') NOT NULL,
     "nombre" character varying(75) NOT NULL,
     "fecha" date NOT NULL,
-    "numeroAsistentes" integer,
     "descripcion" text NOT NULL,
     "localizacion" character varying(50) NOT NULL,
-    CONSTRAINT "evento_pkey" PRIMARY KEY ("id")
+    "id" uuid DEFAULT gen_random_uuid() NOT NULL,
+    CONSTRAINT "evento_id" PRIMARY KEY ("id")
 ) WITH (oids = false);
 
 
@@ -58,6 +54,7 @@ CREATE TABLE "public"."usuario" (
     "email" character varying(50) NOT NULL,
     "nombre" character varying(50) NOT NULL,
     "fechaNacimiento" date,
+    "telefono" character varying(20) DEFAULT '0',
     CONSTRAINT "usuario_username" PRIMARY KEY ("username")
 ) WITH (oids = false);
 
@@ -65,13 +62,13 @@ CREATE TABLE "public"."usuario" (
 DROP TABLE IF EXISTS "usuarioAsistente";
 CREATE TABLE "public"."usuarioAsistente" (
     "username" character varying(50) NOT NULL,
-    "id" integer NOT NULL,
+    "id" uuid NOT NULL,
     CONSTRAINT "usuarioAsistente_username_id" PRIMARY KEY ("username", "id")
 ) WITH (oids = false);
 
 
-ALTER TABLE ONLY "public"."cudarillaAsistente" ADD CONSTRAINT "CudarillaAsistente_id_fkey" FOREIGN KEY (id) REFERENCES evento(id) ON UPDATE CASCADE ON DELETE CASCADE NOT DEFERRABLE;
-ALTER TABLE ONLY "public"."cudarillaAsistente" ADD CONSTRAINT "CudarillaAsistente_nombre_fkey" FOREIGN KEY (nombre) REFERENCES cuadrilla(nombre) ON UPDATE CASCADE ON DELETE CASCADE NOT DEFERRABLE;
+ALTER TABLE ONLY "public"."cuadrillaAsistente" ADD CONSTRAINT "CudarillaAsistente_id_fkey" FOREIGN KEY (id) REFERENCES evento(id) ON UPDATE CASCADE ON DELETE CASCADE NOT DEFERRABLE;
+ALTER TABLE ONLY "public"."cuadrillaAsistente" ADD CONSTRAINT "CudarillaAsistente_nombre_fkey" FOREIGN KEY (nombre) REFERENCES cuadrilla(nombre) ON UPDATE CASCADE ON DELETE CASCADE NOT DEFERRABLE;
 
 ALTER TABLE ONLY "public"."integrante" ADD CONSTRAINT "integrante_nombre_fkey" FOREIGN KEY (nombre) REFERENCES cuadrilla(nombre) ON UPDATE CASCADE ON DELETE CASCADE NOT DEFERRABLE;
 ALTER TABLE ONLY "public"."integrante" ADD CONSTRAINT "integrante_username_fkey" FOREIGN KEY (username) REFERENCES usuario(username) ON UPDATE CASCADE ON DELETE CASCADE NOT DEFERRABLE;
@@ -82,4 +79,4 @@ ALTER TABLE ONLY "public"."seguidores" ADD CONSTRAINT "followers_following_fkey"
 ALTER TABLE ONLY "public"."usuarioAsistente" ADD CONSTRAINT "usuarioAsistente_id_fkey" FOREIGN KEY (id) REFERENCES evento(id) ON UPDATE CASCADE ON DELETE CASCADE NOT DEFERRABLE;
 ALTER TABLE ONLY "public"."usuarioAsistente" ADD CONSTRAINT "usuarioAsistente_username_fkey" FOREIGN KEY (username) REFERENCES usuario(username) ON UPDATE CASCADE ON DELETE CASCADE NOT DEFERRABLE;
 
--- 2024-05-04 14:30:36.479895+00
+-- 2024-05-14 07:58:59.938152+00

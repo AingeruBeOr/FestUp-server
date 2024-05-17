@@ -1,0 +1,1 @@
+10 10 * * * /home/shared/FestUp-server/erase-events.sh
