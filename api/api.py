@@ -398,16 +398,6 @@ async def send_notification(message: Message, topic: str = 'All'):
         )
     )
 
-    messaging.send(
-        messaging.Message(
-            notification=messaging.Notification(
-                **dict(message)
-            ),
-            topic=unidecode(topic.replace(' ', '_'))
-        )
-    )
-
-
 @app.post("/notifications", tags=["Notifications"])
 async def send_broadcast_notification(message: Message, _: str = Depends(get_verified_current_user)):
     await send_notification(message)
